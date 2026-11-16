@@ -26,7 +26,9 @@
   }
 
   /* ----- Estado de filtros ----- */
-  const state = { g: "mujer", fam: "todas", marca: "todas", orden: "rel" };
+  // En teléfono el catálogo se muestra por partes para no cargar todas las fotos de golpe
+  const PAGE = (typeof lite !== "undefined" && lite) ? 8 : 999;
+  const state = { g: "mujer", fam: "todas", marca: "todas", orden: "rel", limit: PAGE };
   const grid = $("#pgrid"), famBar = $("#pfams"), marcaSel = $("#pmarca"), ordenSel = $("#porden");
 
   const addControl = (p) => {
@@ -65,9 +67,13 @@
   }
 
   function renderGrid() {
-    const list = visible();
-    $("#pcount").textContent = list.length === 1 ? "1 perfume" : `${list.length} perfumes`;
-    $("#pempty").hidden = list.length > 0;
+    const all = visible();
+    const list = all.slice(0, state.limit);
+    const more = $("#pmore"), rest = all.length - list.length;
+    more.hidden = rest <= 0;
+    more.textContent = `Ver más perfumes (${rest})`;
+    $("#pcount").textContent = all.length === 1 ? "1 perfume" : `${all.length} perfumes`;
+    $("#pempty").hidden = all.length > 0;
     grid.innerHTML = list.map((p, i) => `
       <article class="pcard${p.agotado ? " out" : ""}" style="--i:${Math.min(i, 11)}">
         <button type="button" class="pcard-open" data-open="${p.id}" aria-label="Ver detalles de ${full(p)}">
@@ -134,14 +140,15 @@
     if (t.dataset.add) return setQty(t.dataset.add, 1);
     if (t.dataset.open) return openDetail(t.dataset.open);
     if (t.closest(".stepper")) { const id = t.closest(".stepper").dataset.id; return setQty(id, (cart[id] || 0) + +t.dataset.d); }
-    if (t.dataset.fam) { state.fam = t.dataset.fam; renderFilters(); return renderGrid(); }
+    if (t.dataset.fam) { state.fam = t.dataset.fam; state.limit = PAGE; renderFilters(); return renderGrid(); }
     if (t.dataset.gotoFam) { dlg.close(); showFamily(t.dataset.gotoFam); return $("#familias").scrollIntoView(); }
     if (t.dataset.shopFam) return goShop(t.dataset.shopFam, t.dataset.shopG);
     if (t.id === "cartClear") { cart = {}; save(); return renderAll(); }
     if (t.dataset.close !== undefined) t.closest("dialog").close();
   });
-  document.querySelectorAll("#pgender button").forEach((b) => b.addEventListener("click", () => { state.g = b.dataset.g; renderFilters(); renderGrid(); }));
-  marcaSel.addEventListener("change", () => { state.marca = marcaSel.value; renderGrid(); });
+  document.querySelectorAll("#pgender button").forEach((b) => b.addEventListener("click", () => { state.g = b.dataset.g; state.limit = PAGE; renderFilters(); renderGrid(); }));
+  marcaSel.addEventListener("change", () => { state.marca = marcaSel.value; state.limit = PAGE; renderGrid(); });
+  $("#pmore").addEventListener("click", () => { state.limit += PAGE; renderGrid(); });
   ordenSel.addEventListener("change", () => { state.orden = ordenSel.value; renderGrid(); });
   fab.addEventListener("click", () => { renderCart(); cartDlg.showModal(); });
   [dlg, cartDlg].forEach((d) => d.addEventListener("click", (e) => { if (e.target === d) d.close(); }));
@@ -152,7 +159,7 @@
     const pool = (x) => items.some((p) => p.g === x && p.familias.includes(fam));
     if (g === "hombre" || g === "mujer") state.g = g;
     if (!pool(state.g)) state.g = state.g === "mujer" ? "hombre" : "mujer";
-    state.fam = fam; state.marca = "todas";
+    state.fam = fam; state.marca = "todas"; state.limit = PAGE;
     renderFilters(); renderGrid();
     $("#catalogo").scrollIntoView();
   }

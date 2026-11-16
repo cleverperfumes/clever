@@ -1316,3 +1316,48 @@ html, body { overflow-x: clip; }
   .note-info dd { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .stage { --bh: min(28svh, 280px); }
 }
+
+
+/* ============ Versión 21: modo ligero para teléfono (clase .lite) ============ */
+.pmore-wrap { display: flex; justify-content: center; margin-top: 22px; }
+.pmore-wrap .btn { padding: 14px 28px; }
+
+html.lite body { background: #f3f4f8; }
+/* fondo uniforme: sin manchas de color ni cambios entre secciones */
+html.lite .aura { display: none; }
+html.lite .stage { background: #f3f4f8; }
+/* sin desenfoques de fondo en ningún elemento */
+html.lite .top, html.lite .cart-fab, html.lite .sheet { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html.lite .top { background: rgba(255,255,255,0.96); }
+html.lite .cart-fab { background: #fff; }
+html.lite .sheet { background: #fbfbfd; }
+html.lite .sheet::backdrop { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(40,44,70,0.4); }
+/* sombras simples: las sombras grandes y difusas son lo que más memoria consume al hacer scroll */
+html.lite .pcard, html.lite .how li, html.lite .strip, html.lite .family-panel, html.lite .conc-detail, html.lite .quiz-card,
+html.lite .note-info, html.lite .stat, html.lite .ask, html.lite .minicard, html.lite .top, html.lite .cart-fab, html.lite .clist li {
+  box-shadow: 0 0 0 1px rgba(40,50,80,0.08), 0 6px 14px -10px rgba(40,50,80,0.3) !important;
+}
+html.lite .family-list button, html.lite .conc-options button, html.lite .answers button, html.lite .btn, html.lite .note,
+html.lite .fchip, html.lite .seg, html.lite .sel select, html.lite .stepper, html.lite .round, html.lite .search input {
+  box-shadow: 0 0 0 1px rgba(40,50,80,0.1), 0 3px 8px -5px rgba(40,50,80,0.3) !important;
+}
+html.lite .family-list button[aria-selected="true"], html.lite .conc-options button[aria-checked="true"],
+html.lite .note[aria-pressed="true"], html.lite .fchip[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ink) !important; }
+html.lite .how li.on { box-shadow: 0 0 0 2px rgba(111,121,201,0.6) !important; transform: none; }
+html.lite .lockup .mark, html.lite .brand .mark, html.lite .hand-img { will-change: auto; }
+html.lite .off { box-shadow: none; }
+/* apariciones cortas y sin giros */
+html.lite .reveal.in, html.lite .how li.reveal.in { animation: rvLite 0.35s ease-out backwards; animation-delay: calc(var(--i, 0) * 30ms); }
+@keyframes rvLite { from { opacity: 0; transform: translateY(14px); } }
+html.lite .swap > *, html.lite .chip { animation: none; }
+html.lite .strip, html.lite .hero .strip { rotate: none; animation: none; }
+
+/* Teléfono: entrada más corta y página más ligera */
+@media (max-width: 760px) {
+  .intro { height: 250svh; }
+  .hand-img { animation-duration: 0.8s; }
+  #evolucion, #glosario, .top nav a[href="#glosario"] { display: none; }
+  .block.learn > :last-child { padding-bottom: 0; }
+  .block-head { padding-top: 44px; padding-bottom: 24px; }
+  .block > :last-child { padding-bottom: 52px; }
+}

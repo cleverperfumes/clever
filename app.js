@@ -1,4 +1,8 @@
 /* Clever: guía interactiva de perfumes. Sin dependencias. */
+// Modo ligero: en teléfonos y pantallas táctiles se reducen efectos para que el sitio no se trabe
+const lite = matchMedia("(max-width: 900px), (hover: none) and (pointer: coarse)").matches;
+const phone = matchMedia("(max-width: 760px)").matches;
+if (lite) document.documentElement.classList.add("lite");
 const $ = (s) => document.querySelector(s);
 const el = (tag, attrs = {}, html = "") => {
   const n = document.createElement(tag);
@@ -299,14 +303,15 @@ h1.innerHTML = h1.textContent.split(" ")
 
 // Scroll: barra de avance y desplazamiento del fondo
 const root = document.documentElement;
+const readBar = $(".read"), auraEl = $(".aura");
 let ticking = false;
 function onScroll() {
   if (ticking) return;
   ticking = true;
   requestAnimationFrame(() => {
     const max = root.scrollHeight - innerHeight;
-    root.style.setProperty("--p", max > 0 ? (scrollY / max).toFixed(4) : 0);
-    if (!calm) root.style.setProperty("--sy", scrollY.toFixed(0));
+    readBar.style.setProperty("--p", max > 0 ? (scrollY / max).toFixed(4) : 0);
+    if (!calm && !lite && auraEl) auraEl.style.setProperty("--sy", scrollY.toFixed(0));
     ticking = false;
   });
 }
@@ -330,7 +335,7 @@ mark("#terms", "blur");
 // Posición de cada sección respecto al centro de la pantalla (de -1 a 1)
 const scrubbed = [...document.querySelectorAll(".hero, .block")];
 function scrub() {
-  if (calm) return;
+  if (calm || lite) return;
   const vh = innerHeight;
   scrubbed.forEach((s) => {
     const r = s.getBoundingClientRect();
@@ -434,19 +439,24 @@ const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const seg = (p, a, b) => clamp01((p - a) / (b - a));
 const smooth = (t) => t * t * (3 - 2 * t);
 function setScene(p) {
-  const e1 = smooth(seg(p, 0, 0.4)), e3 = smooth(seg(p, 0.7, 0.92));
+  // tiempos de cada fase (fracción del recorrido de la entrada); en teléfono es más corta y directa
+  const T = phone
+    ? { hand: [0, 0.3], s: [0.12, 0.3], a: null, notes: [0.42, 0.72], b: [0.5, 0.72] }
+    : { hand: [0, 0.4], s: [0.2, 0.36], a: [0.38, 0.48, 0.6, 0.7], notes: [0.7, 0.92], b: [0.74, 0.9] };
+  const e1 = smooth(seg(p, T.hand[0], T.hand[1])), e3 = smooth(seg(p, T.notes[0], T.notes[1]));
   const s = stage.style;
-  s.setProperty("--d", ((1 - e1) * d0).toFixed(1));                 // la mano baja con el frasco y se queda
+  s.setProperty("--d", ((1 - e1) * d0).toFixed(1));
   s.setProperty("--fo", 1);
-  s.setProperty("--s", (1 - seg(p, 0.2, 0.36)).toFixed(3));          // portada: eslogan y marca
-  s.setProperty("--k", smooth(seg(p, 0.04, 0.34)).toFixed(4));       // giro de salida de la estrella
-  s.setProperty("--a", (seg(p, 0.38, 0.48) * (1 - seg(p, 0.6, 0.7))).toFixed(3)); // "Conoce tu perfume"
-  s.setProperty("--e", e3.toFixed(4));                               // aparecen las notas
-  s.setProperty("--b", seg(p, 0.74, 0.9).toFixed(3));
+  s.setProperty("--s", (1 - seg(p, T.s[0], T.s[1])).toFixed(3));
+  s.setProperty("--k", smooth(seg(p, 0.04, 0.34)).toFixed(4));
+  const aVal = T.a ? seg(p, T.a[0], T.a[1]) * (1 - seg(p, T.a[2], T.a[3])) : 0;
+  s.setProperty("--a", aVal.toFixed(3));
+  s.setProperty("--e", e3.toFixed(4));
+  s.setProperty("--b", seg(p, T.b[0], T.b[1]).toFixed(3));
   const open = e3 > 0.9;
   stage.classList.toggle("open", open);
-  stage.classList.toggle("s-gone", p >= 0.36);
-  stage.classList.toggle("gone", p < 0.37 || p >= 0.7);
+  stage.classList.toggle("s-gone", p >= T.s[1]);
+  stage.classList.toggle("gone", aVal === 0);
   notesEl.inert = !open;
 }
 // Punto de partida: la mano asoma desde arriba, con la base del frasco a un cuarto de la pantalla
@@ -512,7 +522,7 @@ function sloshFrame(t) {
   if (moving) requestAnimationFrame(sloshFrame); else { slosh.running = false; slosh.lastT = 0; }
 }
 function wakeSlosh() { if (!slosh.running) { slosh.running = true; requestAnimationFrame(sloshFrame); } }
-if (calm) {
+if (calm || lite) {
   flasks.forEach((f) => { f.level = f.target; drawLiquid(f, 0); });
 } else {
   addEventListener("scroll", () => {
