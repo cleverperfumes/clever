@@ -1245,3 +1245,74 @@ html, body { overflow-x: clip; }
 .lockup .mark { animation: starIn 0.9s 0.15s cubic-bezier(.2,.9,.25,1.08) backwards; }
 @keyframes starIn { from { opacity: 0; transform: rotate(-120deg) scale(0.4); } }
 @media (prefers-reduced-motion: reduce) { .lockup, .lockup .mark { animation: none; } }
+
+
+/* ============ Versión 20: ajustes para teléfono ============ */
+
+/* 1) Rendimiento: en pantallas táctiles se quitan los desenfoques de fondo y filtros que saturaban la memoria */
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .family-list button, .conc-options button, .answers button, .btn, .btn.send, .note, .fchip, .seg, .sel select, .stepper,
+  .strip, .family-panel, .conc-detail, .quiz-card, .note-info, .search input, .round, .how li, .pcard, .minicard {
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  }
+  .strip, .family-panel, .conc-detail, .quiz-card, .how li { background: linear-gradient(160deg, rgba(255,255,255,0.9), rgba(255,255,255,0.72)); }
+  .note-info { background: rgba(255,255,255,0.94); }
+  .family-list button, .conc-options button, .answers button, .btn, .note, .fchip, .seg, .sel select, .stepper, .round {
+    background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.7));
+  }
+  .btn.send, .top nav a.cta { background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.78)); }
+  .family-list button { background: linear-gradient(180deg, color-mix(in srgb, var(--c) 8%, #fff), color-mix(in srgb, var(--c) 5%, rgba(255,255,255,0.8))); }
+  .family-list button[aria-selected="true"] { background: linear-gradient(180deg, color-mix(in srgb, var(--c) 18%, #fff), color-mix(in srgb, var(--c) 12%, #fff)); }
+  .fchip { background: linear-gradient(180deg, color-mix(in srgb, var(--c) 8%, #fff), color-mix(in srgb, var(--c) 5%, #fff)); }
+  .fchip[aria-pressed="true"] { background: linear-gradient(180deg, color-mix(in srgb, var(--c) 20%, #fff), color-mix(in srgb, var(--c) 14%, #fff)); }
+  .aura i { filter: blur(50px); transform: none !important; width: 60vmax; height: 60vmax; }
+  .aura i::after { animation: none; }
+  .aura i:nth-child(n+3) { display: none; }
+  .pimg img, .dimg img, .bottle, .brand .mark { filter: none; }
+  .btn::after, .family-list button::after, .conc-options button::after, .answers button::after { display: none; }
+  .blur { --fblur: none; }
+  .family-panel, .conc-detail, .quiz-card { translate: none; }
+  .block-head h2, .hero h2 { will-change: auto; }
+  .pcard { animation: none; }
+  .pcard:hover, .how li:hover { transform: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* 2) Detalle de concentración: las cifras ya no se cortan */
+@media (max-width: 900px) {
+  .conc-detail { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; padding: 18px; }
+  .stat { padding: 16px 14px; min-width: 0; }
+  .stat b { font-size: clamp(24px, 7.2vw, 34px); white-space: normal; letter-spacing: -0.03em; }
+  .stat span { font-size: 13.5px; }
+  .conc-options button { padding: 16px 14px; min-width: 0; }
+}
+
+/* 3) Notas del perfume en teléfono: mano arriba, notas en una cuadrícula debajo y la ficha al final */
+@media (max-width: 760px) {
+  .stage { --bh: min(30svh, 290px); }
+  .rig, .hand-img { top: 33%; }
+  .copy-b { top: calc(33% + var(--bh) * 0.6); left: 16px; right: 16px; transform: none; }
+  .copy-b h2 { font-size: 18px; letter-spacing: -0.02em; }
+  .notes {
+    position: absolute; inset: auto; left: 50%; top: calc(100% + var(--bh) * 0.1 + 38px);
+    width: min(92vw, 420px); transform: translateX(-50%);
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;
+    opacity: var(--e);
+  }
+  .note, .note:hover, .note:active {
+    position: static; transform: none; opacity: 1; justify-content: center;
+    padding: 9px 6px; font-size: 12.5px; gap: 6px; white-space: nowrap; min-width: 0;
+  }
+  .note .dot { width: 9px; height: 9px; }
+  .note-info { left: 12px; right: 12px; bottom: 10px; padding: 12px 16px 14px; border-radius: 20px; max-height: calc(100svh - 33% - var(--bh) * 0.6 - 150px); overflow: hidden; }
+  .note-info .layer { font-size: 12px; }
+  .note-info h3 { font-size: 19px; margin-top: 0; }
+  .note-info .desc { font-size: 13.5px; line-height: 1.4; margin-top: 3px; }
+  .note-info dl { grid-template-columns: 1.5fr 1fr; gap: 4px 12px; margin-top: 7px; padding-top: 7px; }
+  .note-info dt { font-size: 11.5px; } .note-info dd { font-size: 12.5px; line-height: 1.35; }
+}
+@media (max-width: 760px) {
+  .note-info { max-height: none; }
+  .note-info dd { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .stage { --bh: min(28svh, 280px); }
+}
